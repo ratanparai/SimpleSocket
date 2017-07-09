@@ -1,7 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard1.4</TargetFramework>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputType>winexe</OutputType>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TargetFramework>netstandard1.4</TargetFramework>
+    <PackageId>Ratan.SimpleSocket</PackageId>
+    <PackageVersion>1.0.1</PackageVersion>
+    <Authors>Ratan Sunder Parai</Authors>
+    <Description>Simple Async Socket Server Library</Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReleaseNotes>Bug Fix</PackageReleaseNotes>
+    <Copyright>Copyright 2017 (c) Ratan Sunder Parai. All rights reserved.</Copyright>
+    <PackageTags>Socket Server Async</PackageTags>
+    <ApplicationIcon />
+    <OutputTypeEx>winexe</OutputTypeEx>
+    <StartupObject />
+  </PropertyGroup>
 </Project>
