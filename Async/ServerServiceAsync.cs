@@ -236,6 +236,22 @@ namespace SimpleSocket.Async
             data.SimpleSocketEventArgs = e;
             // Console.WriteLine(message);
             OnMessageReceive(data);
+
+
+            // Start for receiving if the socket is not already in receive mode from 
+            // ProcessSend() method. This can occure if the server only want to receive 
+            // data but not send anything in return. Although this is not very likely that is
+            // gonna happen but who knows!
+            try
+            {
+                bool willReaiseEvent = (e.UserToken as AsyncUserToken).Socket.ReceiveAsync(e);
+                if (!willReaiseEvent)
+                {
+                    ProcessReceive(e);
+                }
+
+            }
+            catch (Exception) { } // do nothing because the socket is already listening for incoming connection
         }
 
         public abstract void OnMessageReceive(SimpleSocketData data);
@@ -278,6 +294,15 @@ namespace SimpleSocket.Async
             }
             catch (Exception) { }
 
+            // Decrease the number of connected socket client
+            Interlocked.Decrement(ref numberOfConnectedSockets);
+            maxNumberOfConnectedSocket.Release();
+
+            // Free the SocketAsyncEventArg so they can be reused by another client
+            readWritePool.Push(e);
+
+            OnClientDisconnected();
+
             // Cant seem to find socket close so chekcing if shutdown close the socket connection or not
             // PrintIfSocketIsClosedOrNot(token.Socket);
         }
@@ -293,5 +318,18 @@ namespace SimpleSocket.Async
                 Console.WriteLine("Socket is closed sucessfully. Enjoy Freedom. :)");
             }
         }
+
+        /// <summary>
+        /// This method will be called when a got disconneced from the server. 
+        /// </summary>
+        public virtual void OnClientDisconnected()
+        {
+
+        }
+
+        /// <summary>
+        /// Get the number of currently connected Clients
+        /// </summary>
+        public int ConnectedClients { get { return numberOfConnectedSockets; } }
     }
 }
