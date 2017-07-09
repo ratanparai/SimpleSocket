@@ -39,7 +39,7 @@ namespace SimpleSocket.Async
             Run();
 
         }
-       
+
         // Call method to run the server properly
         private void Run()
         {
@@ -72,7 +72,7 @@ namespace SimpleSocket.Async
             }
         }
 
-        
+
 
         /// <summary>
         /// Start the Socket server process
@@ -136,7 +136,7 @@ namespace SimpleSocket.Async
             Interlocked.Increment(ref numberOfConnectedSockets);
 
             // debug print
-            Console.WriteLine("Client connection accepted. Total number of client " + numberOfConnectedSockets);
+            // Console.WriteLine("Client connection accepted. Total number of client " + numberOfConnectedSockets);
 
             // get the Socket of accepted client connection and put it in the ReadAsyncEventArgs object
             // UserToken
@@ -149,15 +149,8 @@ namespace SimpleSocket.Async
             // Returns false if the I/O operation completed synchronously. The SocketAsyncEventArgs.Completed 
             // event on the e parameter will not be raised and the e object passed as a parameter may be examined 
             // immediately after the method call returns to retrieve the result of the operation.
-
-            // check if acceptsocket is ok
-            if(e.AcceptSocket != null)
-            {
-                Console.WriteLine("AcceptSocket is not null : " + e.SocketError.ToString());
-            }
-
             bool willRaiseEvent = e.AcceptSocket.ReceiveAsync(readAsyncEventArgs);
-            if(!willRaiseEvent)
+            if (!willRaiseEvent)
             {
                 ProcessReceive(readAsyncEventArgs);
             }
@@ -173,7 +166,6 @@ namespace SimpleSocket.Async
         /// <param name="e"></param>
         private void IO_Complete(object sender, SocketAsyncEventArgs e)
         {
-            Console.WriteLine("IO_Complete is called");
             // Determine which of the operation is completed and call associate handler
             switch (e.LastOperation)
             {
@@ -192,7 +184,7 @@ namespace SimpleSocket.Async
 
         private void ProcessSend(SocketAsyncEventArgs e)
         {
-            if(e.SocketError == SocketError.Success)
+            if (e.SocketError == SocketError.Success)
             {
                 // done echoing data back to the client
                 AsyncUserToken token = (AsyncUserToken)e.UserToken;
@@ -202,7 +194,8 @@ namespace SimpleSocket.Async
                 {
                     ProcessReceive(e);
                 }
-            } else
+            }
+            else
             {
                 CloseClientSocket(e);
             }
@@ -210,14 +203,10 @@ namespace SimpleSocket.Async
 
         private void ProcessReceive(SocketAsyncEventArgs e)
         {
-            Console.WriteLine("Process Receive is called");
             AsyncUserToken token = (AsyncUserToken)e.UserToken;
             // check if the remote host closed the connection
             if (e.BytesTransferred > 0 && e.SocketError == SocketError.Success)
             {
-                // Log
-                Console.WriteLine("The server have read total of {0} bytes of data", e.BytesTransferred);
-
 
                 // Do data processing here
                 string message = Encoding.ASCII.GetString(e.Buffer, e.Offset, e.BytesTransferred);
@@ -227,12 +216,12 @@ namespace SimpleSocket.Async
 
                 // start receiving again
                 // token.Socket.ReceiveAsync(e);
-            
 
-            } else
+
+            }
+            else
             {
                 // close client socket
-                Console.WriteLine("Socket connection is clossing...");
                 CloseClientSocket(e);
             }
         }
@@ -256,7 +245,7 @@ namespace SimpleSocket.Async
             SocketAsyncEventArgs eventArgs = data.SimpleSocketEventArgs;
             string message = data.Message;
 
-            if(null != message && message.Trim() != "")
+            if (null != message && message.Trim() != "")
             {
                 // send the message 
                 byte[] buffer = Encoding.ASCII.GetBytes(message);
@@ -265,7 +254,7 @@ namespace SimpleSocket.Async
 
                 AsyncUserToken token = eventArgs.UserToken as AsyncUserToken;
                 bool willRaiseEvent = token.Socket.SendAsync(eventArgs);
-                if(!willRaiseEvent)
+                if (!willRaiseEvent)
                 {
                     ProcessSend(eventArgs);
                 }
@@ -290,9 +279,7 @@ namespace SimpleSocket.Async
             catch (Exception) { }
 
             // Cant seem to find socket close so chekcing if shutdown close the socket connection or not
-            PrintIfSocketIsClosedOrNot(token.Socket);
-
-            //
+            // PrintIfSocketIsClosedOrNot(token.Socket);
         }
 
         private void PrintIfSocketIsClosedOrNot(Socket socket)
@@ -300,7 +287,8 @@ namespace SimpleSocket.Async
             if (socket.Connected)
             {
                 Console.WriteLine("Socket is still connected");
-            } else
+            }
+            else
             {
                 Console.WriteLine("Socket is closed sucessfully. Enjoy Freedom. :)");
             }
