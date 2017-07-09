@@ -89,8 +89,8 @@ namespace SimpleSocket.Async
 
             StartAccept(null);
 
-            Console.WriteLine("Server is running. Press any key to exit...");
-            Console.ReadKey();
+            // Console.WriteLine("Server is running. Press any key to exit...");
+            // Console.ReadKey();
 
         }
 
@@ -192,10 +192,16 @@ namespace SimpleSocket.Async
 
         private void ProcessSend(SocketAsyncEventArgs e)
         {
-            AsyncUserToken token = e.UserToken as AsyncUserToken;
             if(e.SocketError == SocketError.Success)
             {
-                token.Socket.ReceiveAsync(e);
+                // done echoing data back to the client
+                AsyncUserToken token = (AsyncUserToken)e.UserToken;
+                // read the next block of data send from the client
+                bool willRaiseEvent = token.Socket.ReceiveAsync(e);
+                if (!willRaiseEvent)
+                {
+                    ProcessReceive(e);
+                }
             } else
             {
                 CloseClientSocket(e);
@@ -217,7 +223,11 @@ namespace SimpleSocket.Async
                 string message = Encoding.ASCII.GetString(e.Buffer, e.Offset, e.BytesTransferred);
                 OnReceive(e);
 
-                token.Socket.SendAsync(e);
+                // token.Socket.SendAsync(e);
+
+                // start receiving again
+                // token.Socket.ReceiveAsync(e);
+            
 
             } else
             {
@@ -232,11 +242,43 @@ namespace SimpleSocket.Async
         private void OnReceive(SocketAsyncEventArgs e)
         {
             string message = Encoding.ASCII.GetString(e.Buffer, e.Offset, e.BytesTransferred);
-            Console.WriteLine(message);
+            SimpleSocketData data = new SimpleSocketData();
+            data.Message = message;
+            data.SimpleSocketEventArgs = e;
+            // Console.WriteLine(message);
+            OnMessageReceive(data);
         }
 
+        public abstract void OnMessageReceive(SimpleSocketData data);
 
-        private void CloseClientSocket(SocketAsyncEventArgs e)
+        public void SendMessage(SimpleSocketData data)
+        {
+            SocketAsyncEventArgs eventArgs = data.SimpleSocketEventArgs;
+            string message = data.Message;
+
+            if(null != message && message.Trim() != "")
+            {
+                // send the message 
+                byte[] buffer = Encoding.ASCII.GetBytes(message);
+
+                eventArgs.SetBuffer(buffer, 0, message.Length);
+
+                AsyncUserToken token = eventArgs.UserToken as AsyncUserToken;
+                bool willRaiseEvent = token.Socket.SendAsync(eventArgs);
+                if(!willRaiseEvent)
+                {
+                    ProcessSend(eventArgs);
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Close Socket connection with one of the connected Client socket 
+        /// </summary>
+        /// <param name="e">SocketAsyncEvnetArgs object which have the socket of the client that 
+        /// we want to close connection</param>
+        public void CloseClientSocket(SocketAsyncEventArgs e)
         {
             AsyncUserToken token = e.UserToken as AsyncUserToken;
 
