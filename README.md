@@ -1,5 +1,12 @@
 # SimpleSocket
-Example: 
+
+## Install:
+To install SimpleSocket, run the following command in the [Package Manager Console](https://docs.nuget.org/docs/start-here/using-the-package-manager-console)
+```
+PM> Install-Package Ratan.SimpleSocket
+```
+
+## Example: 
 ```csharp
 using System;
 using SimpleSocket.Async;
